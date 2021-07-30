@@ -100,6 +100,7 @@ enum action {
 	SEL_UMOUNT,
 	SEL_HELP,
 	SEL_AUTONEXT,
+	SEL_TERM,
 	SEL_EDIT,
 	SEL_PLUGIN,
 	SEL_SHELL,
@@ -246,6 +247,8 @@ static struct key bindings[] = {
 	{ '?',            SEL_HELP },
 	/* Quit a context */
 	{ '+',            SEL_AUTONEXT },
+	/* Open terminal in new window */
+	{ 'i',            SEL_TERM },
 	/* Edit in EDITOR */
 	{ 'e',            SEL_EDIT },
 	/* Run a plugin */

@@ -410,6 +410,7 @@ static char *editor;
 static char *enveditor;
 static char *pager;
 static char *shell;
+static char *dvtm_fifo;
 static char *home;
 static char *initpath;
 static char *cfgpath;
@@ -649,6 +650,7 @@ static const char * const env_cfg[] = {
 #define ENV_EDITOR 2
 #define ENV_PAGER 3
 #define ENV_NCUR 4
+#define ENV_DVTM 5
 
 static const char * const envs[] = {
 	"SHELL",
@@ -656,6 +658,7 @@ static const char * const envs[] = {
 	"EDITOR",
 	"PAGER",
 	"nnn",
+	"DVTM_CMD_FIFO",
 };
 
 /* Time type used */
@@ -6626,6 +6629,7 @@ nochange:
 		case SEL_HELP: // fallthrough
 		case SEL_AUTONEXT: // fallthrough
 		case SEL_EDIT: // fallthrough
+		case SEL_TERM: // fallthrough
 		case SEL_LOCK:
 		{
 			bool refresh = FALSE;
@@ -6665,8 +6669,20 @@ nochange:
 					copycurname();
 				goto nochange;
 			case SEL_EDIT:
-				spawn(editor, newpath, NULL, NULL, F_CLI);
+    			{
+    				FILE *fp = fopen(dvtm_fifo, "w+");
+    				fprintf(fp, "create '%s %s'\n", editor, newpath);
+    				fclose(fp);
+//				spawn(editor, newpath, NULL, NULL, F_CLI);
 				continue;
+    			}
+			case SEL_TERM:
+    			{
+    				FILE *fp = fopen(dvtm_fifo, "w+");
+    				fprintf(fp, "create %s '' %s\n", shell, path);
+    				fclose(fp);
+				continue;
+    			}
 			default: /* SEL_LOCK */
 				lock_terminal();
 				break;
@@ -7941,6 +7957,10 @@ int main(int argc, char *argv[])
 	DPRINTF_S(shell);
 
 	DPRINTF_S(getenv("PWD"));
+
+	/* Get DVTM_CMD_FIFO */
+	dvtm_fifo = xgetenv(envs[ENV_DVTM], utils[UTIL_SH]);
+	DPRINTF_S(dvtm_fifo);
 
 #ifndef NOFIFO
 	/* Create fifo */
